@@ -18,31 +18,33 @@
 
 package org.apache.skywalking.oap.server.storage.plugin.solr.base;
 
-import org.apache.skywalking.oap.server.core.analysis.metrics.Metrics;
-import org.apache.skywalking.oap.server.core.analysis.record.Record;
 import org.apache.skywalking.oap.server.core.register.RegisterSource;
-import org.apache.skywalking.oap.server.core.storage.*;
+import org.apache.skywalking.oap.server.core.storage.IRegisterDAO;
+import org.apache.skywalking.oap.server.core.storage.StorageBuilder;
 import org.apache.skywalking.oap.server.storage.plugin.solr.SolrConnector;
 
-public class SolrStorageDAO extends SolrDAO implements StorageDAO {
+import java.io.IOException;
 
-    public SolrStorageDAO(SolrConnector client) {
+public class SolrRegisterDAO extends SolrDAO implements IRegisterDAO {
+
+    final StorageBuilder<RegisterSource> storageBuilder;
+    public SolrRegisterDAO(SolrConnector client, StorageBuilder<RegisterSource> storageBuilder) {
         super(client);
+        this.storageBuilder = storageBuilder;
     }
 
     @Override
-    public IMetricsDAO newMetricsDao(StorageBuilder<Metrics> storageBuilder) {
-        return new SolrMertricsDAO(getClient(), storageBuilder);
-    }
-
-    @Override
-    public IRegisterDAO newRegisterDao(StorageBuilder<RegisterSource> storageBuilder) {
-        return new SolrRegisterDAO(getClient(), storageBuilder);
-    }
-
-    @Override
-    public IRecordDAO newRecordDao(StorageBuilder<Record> storageBuilder) {
+    public RegisterSource get(String modelName, String id) throws IOException {
         return null;
     }
 
+    @Override
+    public void forceInsert(String modelName, RegisterSource source) throws IOException {
+
+    }
+
+    @Override
+    public void forceUpdate(String modelName, RegisterSource source) throws IOException {
+
+    }
 }

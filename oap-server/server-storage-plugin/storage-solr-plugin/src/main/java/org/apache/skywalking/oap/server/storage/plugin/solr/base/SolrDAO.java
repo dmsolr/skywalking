@@ -20,17 +20,16 @@ package org.apache.skywalking.oap.server.storage.plugin.solr.base;
 
 import org.apache.skywalking.oap.server.core.storage.AbstractDAO;
 import org.apache.skywalking.oap.server.library.client.Client;
+import org.apache.skywalking.oap.server.storage.plugin.solr.SolrConnector;
+import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.common.SolrInputDocument;
 
 import java.util.Map;
 
-public class SolrDAO extends AbstractDAO {
+public abstract class SolrDAO extends AbstractDAO<SolrConnector> {
 
-    public SolrDAO(Client client) {
+    public SolrDAO(SolrConnector client) {
         super(client);
     }
 
-    protected SolrInputDocument toDocument(Map<String, Object> document) {
-        return new SolrInputDocument();
-    }
 }

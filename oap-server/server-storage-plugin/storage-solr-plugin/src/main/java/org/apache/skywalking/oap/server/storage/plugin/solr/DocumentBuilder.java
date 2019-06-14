@@ -16,22 +16,29 @@
  *
  */
 
-package org.apache.skywalking.oap.server.storage.plugin.solr.base;
+package org.apache.skywalking.oap.server.storage.plugin.solr;
 
-import org.apache.skywalking.oap.server.core.storage.IHistoryDeleteDAO;
-import org.apache.skywalking.oap.server.core.storage.model.Model;
-import org.apache.skywalking.oap.server.storage.plugin.solr.SolrConnector;
+import com.google.common.collect.Maps;
+import org.apache.solr.common.SolrDocument;
+import org.apache.solr.common.SolrInputDocument;
 
-import java.io.IOException;
+import java.util.Map;
 
-public class SolrHistoryDeleteDAO extends SolrDAO implements IHistoryDeleteDAO {
+public class DocumentBuilder {
 
-    public SolrHistoryDeleteDAO(SolrConnector client) {
-        super(client);
+    public static final SolrInputDocument toDocument(Map<String, Object> map) {
+        SolrInputDocument document = new SolrInputDocument();
+        map.forEach((k, v) -> {
+            document.addField(k, v);
+        });
+        return document;
     }
 
-    @Override
-    public void deleteHistory(Model model, String timeBucketColumnName) throws IOException {
-
+    public static final Map<String, Object> toMap(SolrDocument document) {
+        Map<String, Object> map = Maps.newHashMap();
+        document.forEach((k, v) -> {
+            map.put(k, v);
+        });
+        return map;
     }
 }

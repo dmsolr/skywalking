@@ -16,22 +16,7 @@
  *
  */
 
-package org.apache.skywalking.oap.server.storage.plugin.solr.base;
+package org.apache.skywalking.apm.plugin.solrj.define;
 
-import org.apache.skywalking.oap.server.core.storage.IHistoryDeleteDAO;
-import org.apache.skywalking.oap.server.core.storage.model.Model;
-import org.apache.skywalking.oap.server.storage.plugin.solr.SolrConnector;
-
-import java.io.IOException;
-
-public class SolrHistoryDeleteDAO extends SolrDAO implements IHistoryDeleteDAO {
-
-    public SolrHistoryDeleteDAO(SolrConnector client) {
-        super(client);
-    }
-
-    @Override
-    public void deleteHistory(Model model, String timeBucketColumnName) throws IOException {
-
-    }
+public class ConcurrentUpdateInstrumentation {
 }

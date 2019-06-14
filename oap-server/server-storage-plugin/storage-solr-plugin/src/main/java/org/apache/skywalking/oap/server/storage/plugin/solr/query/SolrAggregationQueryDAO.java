@@ -22,13 +22,18 @@ import org.apache.skywalking.oap.server.core.analysis.Downsampling;
 import org.apache.skywalking.oap.server.core.query.entity.Order;
 import org.apache.skywalking.oap.server.core.query.entity.TopNEntity;
 import org.apache.skywalking.oap.server.core.storage.query.IAggregationQueryDAO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.List;
 
 public class SolrAggregationQueryDAO implements IAggregationQueryDAO {
+    private static final Logger logger = LoggerFactory.getLogger(SolrAggregationQueryDAO.class);
+
     @Override
     public List<TopNEntity> getServiceTopN(String indName, String valueCName, int topN, Downsampling downsampling, long startTB, long endTB, Order order) throws IOException {
+
         return null;
     }
 

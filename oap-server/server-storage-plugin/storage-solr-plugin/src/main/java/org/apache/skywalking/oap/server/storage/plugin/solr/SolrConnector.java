@@ -20,13 +20,26 @@ package org.apache.skywalking.oap.server.storage.plugin.solr;
 
 import org.apache.skywalking.oap.server.library.client.Client;
 import org.apache.solr.client.solrj.SolrClient;
+import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.CloudSolrClient;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
+import org.apache.solr.client.solrj.response.QueryResponse;
+import org.apache.solr.client.solrj.response.UpdateResponse;
+import org.apache.solr.common.SolrDocumentList;
+import org.apache.solr.common.SolrInputDocument;
+import org.apache.solr.common.params.ModifiableSolrParams;
+import org.apache.solr.common.params.SolrParams;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.lang.invoke.MethodHandles;
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 public class SolrConnector implements Client {
+    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private SolrClient client = null;
     private boolean isCloudMode = false;
 
@@ -46,6 +59,26 @@ public class SolrConnector implements Client {
         else {
             client = new HttpSolrClient.Builder("").build();
         }
+    }
+
+    public void query(String collection, SolrParams params) throws IOException, SolrServerException {
+        QueryResponse response = client.query(collection, params);
+        SolrDocumentList results = response.getResults();
+        logger.info(results.toString());
+    }
+
+    public SolrDocumentList get(String collection, String id) throws IOException, SolrServerException {
+        return null;
+    }
+
+    ModifiableSolrParams newParams() {
+        ModifiableSolrParams params = new ModifiableSolrParams();
+        return params;
+    }
+
+    public void upsert(String collection, Collection<SolrInputDocument> docs) throws IOException, SolrServerException {
+        UpdateResponse response = client.add(collection, docs);
+        logger.info(response.toString());
     }
 
     @Override
