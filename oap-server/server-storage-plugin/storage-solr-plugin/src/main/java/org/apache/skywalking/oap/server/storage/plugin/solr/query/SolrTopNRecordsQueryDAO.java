@@ -16,27 +16,19 @@
  *
  */
 
-package org.apache.skywalking.oap.server.storage.plugin.solr;
+package org.apache.skywalking.oap.server.storage.plugin.solr.query;
 
-import org.apache.skywalking.oap.server.library.module.ModuleConfig;
+import org.apache.skywalking.oap.server.core.query.entity.Order;
+import org.apache.skywalking.oap.server.core.query.entity.TopNRecord;
+import org.apache.skywalking.oap.server.core.storage.query.ITopNRecordsQueryDAO;
 
+import java.io.IOException;
 import java.util.List;
 
-public class SolrStorageModuleConfig extends ModuleConfig {
+public class SolrTopNRecordsQueryDAO implements ITopNRecordsQueryDAO {
 
-    public List<String> getZKHosts() {
+    @Override
+    public List<TopNRecord> getTopNRecords(long startSecondTB, long endSecondTB, String metricName, int serviceId, int topN, Order order) throws IOException {
         return null;
-    }
-
-    public List<String> getHosts() {
-        return null;
-    }
-
-    public String getChroot() {
-        return null;
-    }
-
-    public boolean useZookeeper() {
-        return false;
     }
 }

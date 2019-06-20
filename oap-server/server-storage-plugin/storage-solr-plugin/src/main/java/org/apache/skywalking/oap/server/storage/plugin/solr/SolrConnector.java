@@ -20,15 +20,21 @@ package org.apache.skywalking.oap.server.storage.plugin.solr;
 
 import org.apache.skywalking.oap.server.library.client.Client;
 import org.apache.solr.client.solrj.SolrClient;
+import org.apache.solr.client.solrj.SolrRequest;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.CloudSolrClient;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
+import org.apache.solr.client.solrj.request.ConfigSetAdminRequest;
+import org.apache.solr.client.solrj.request.CoreAdminRequest;
+import org.apache.solr.client.solrj.request.GenericSolrRequest;
 import org.apache.solr.client.solrj.response.QueryResponse;
+import org.apache.solr.client.solrj.response.SimpleSolrResponse;
 import org.apache.solr.client.solrj.response.UpdateResponse;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.params.ModifiableSolrParams;
 import org.apache.solr.common.params.SolrParams;
+import org.apache.solr.common.util.NamedList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,22 +49,34 @@ public class SolrConnector implements Client {
     private SolrClient client = null;
     private boolean isCloudMode = false;
 
-    public SolrConnector(SolrStorageModuleConfig config) {
-        // Cloud Mode
-        if (config.isCloudMode()) {
-            // by zk
-            CloudSolrClient client;
-            if (config.useZookeeper()) {
-                client = new CloudSolrClient.Builder(config.getZKHosts(), Optional.of(config.getChroot()))
-                        .build();
-            } else {
-                client = new CloudSolrClient.Builder(config.getHosts()).build();
-            }
-//            client.setDefaultCollection(config.getCollection());
-        }
-        else {
-            client = new HttpSolrClient.Builder("").build();
-        }
+    public SolrClient getClient() {
+        return client;
+    }
+
+    public SolrConnector(SolrStorageModuleConfig config) throws IOException, SolrServerException {
+//        // Cloud Mode
+//        if (config.isCloudMode()) {
+//            // by zk
+//            CloudSolrClient client;
+//            if (config.useZookeeper()) {
+//                client = new CloudSolrClient.Builder(config.getZKHosts(), Optional.of(config.getChroot()))
+//                        .build();
+//            } else {
+//                client = new CloudSolrClient.Builder(config.getHosts()).build();
+//            }
+////            client.setDefaultCollection(config.getCollection());
+//        }
+//        else {
+//            client = new HttpSolrClient.Builder("").build();
+//        }
+        client = new HttpSolrClient.Builder("http://test03.loc:8983/solr").build();
+        init();
+    }
+
+    private void init() throws IOException, SolrServerException {
+        GenericSolrRequest request = new GenericSolrRequest(SolrRequest.METHOD.GET, "/admin/info/system", null);
+        SimpleSolrResponse process = request.process(client);
+        isCloudMode = "solrcloud".equals(process.getResponse().get("mode"));
     }
 
     public void query(String collection, SolrParams params) throws IOException, SolrServerException {
@@ -79,6 +97,10 @@ public class SolrConnector implements Client {
     public void upsert(String collection, Collection<SolrInputDocument> docs) throws IOException, SolrServerException {
         UpdateResponse response = client.add(collection, docs);
         logger.info(response.toString());
+    }
+
+    public boolean isCloudMode() {
+        return isCloudMode;
     }
 
     @Override

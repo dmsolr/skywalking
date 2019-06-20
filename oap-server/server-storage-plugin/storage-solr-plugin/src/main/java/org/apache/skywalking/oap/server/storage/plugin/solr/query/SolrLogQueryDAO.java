@@ -16,27 +16,18 @@
  *
  */
 
-package org.apache.skywalking.oap.server.storage.plugin.solr;
+package org.apache.skywalking.oap.server.storage.plugin.solr.query;
 
-import org.apache.skywalking.oap.server.library.module.ModuleConfig;
+import org.apache.skywalking.oap.server.core.query.entity.LogState;
+import org.apache.skywalking.oap.server.core.query.entity.Logs;
+import org.apache.skywalking.oap.server.core.query.entity.Pagination;
+import org.apache.skywalking.oap.server.core.storage.query.ILogQueryDAO;
 
-import java.util.List;
+import java.io.IOException;
 
-public class SolrStorageModuleConfig extends ModuleConfig {
-
-    public List<String> getZKHosts() {
+public class SolrLogQueryDAO implements ILogQueryDAO {
+    @Override
+    public Logs queryLogs(String metricName, int serviceId, int serviceInstanceId, int endpointId, String traceId, LogState state, String stateCode, Pagination paging, int from, int limit, long startTB, long endTB) throws IOException {
         return null;
-    }
-
-    public List<String> getHosts() {
-        return null;
-    }
-
-    public String getChroot() {
-        return null;
-    }
-
-    public boolean useZookeeper() {
-        return false;
     }
 }

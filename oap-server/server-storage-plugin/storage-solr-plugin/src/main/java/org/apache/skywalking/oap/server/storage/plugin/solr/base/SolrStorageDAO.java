@@ -42,7 +42,7 @@ public class SolrStorageDAO extends SolrDAO implements StorageDAO {
 
     @Override
     public IRecordDAO newRecordDao(StorageBuilder<Record> storageBuilder) {
-        return null;
+        return new SolrRecordDAO(getClient(), storageBuilder);
     }
 
 }

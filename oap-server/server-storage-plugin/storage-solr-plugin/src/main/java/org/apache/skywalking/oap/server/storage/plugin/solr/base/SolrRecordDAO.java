@@ -18,34 +18,20 @@
 
 package org.apache.skywalking.oap.server.storage.plugin.solr.base;
 
-import org.apache.skywalking.oap.server.core.register.RegisterSource;
-import org.apache.skywalking.oap.server.core.storage.IRegisterDAO;
+import org.apache.skywalking.oap.server.core.analysis.record.Record;
+import org.apache.skywalking.oap.server.core.storage.IRecordDAO;
 import org.apache.skywalking.oap.server.core.storage.StorageBuilder;
+import org.apache.skywalking.oap.server.core.storage.model.Model;
 import org.apache.skywalking.oap.server.storage.plugin.solr.SolrConnector;
 
 import java.io.IOException;
 
-public class SolrRegisterDAO extends SolrDAO implements IRegisterDAO {
-
-    final StorageBuilder<RegisterSource> storageBuilder;
-
-    public SolrRegisterDAO(SolrConnector client, StorageBuilder<RegisterSource> storageBuilder) {
-        super(client);
-        this.storageBuilder = storageBuilder;
+public class SolrRecordDAO implements IRecordDAO {
+    public SolrRecordDAO(SolrConnector client, StorageBuilder<Record> storageBuilder) {
     }
 
     @Override
-    public RegisterSource get(String modelName, String id) throws IOException {
+    public Object prepareBatchInsert(Model model, Record record) throws IOException {
         return null;
-    }
-
-    @Override
-    public void forceInsert(String modelName, RegisterSource source) throws IOException {
-
-    }
-
-    @Override
-    public void forceUpdate(String modelName, RegisterSource source) throws IOException {
-
     }
 }
