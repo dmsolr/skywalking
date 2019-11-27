@@ -27,7 +27,7 @@ jobs:
       - name: Build the Docker image
         run: ./mvnw -f test/plugin/pom.xml clean package -DskipTests docker:build -DBUILD_NO=action
       - name: Run elasticsearch-5.x-scenario
-        run: bash test/plugin/run.sh elasticsearch-5.x-scenario
+        run: export BUILD_NO=action && bash test/plugin/run.sh elasticsearch-5.x-scenario
       - name: Run elasticsearch-6.x-scenario
-        run: bash test/plugin/run.sh elasticsearch-6.x-scenario
+        run: export BUILD_NO=action && bash test/plugin/run.sh elasticsearch-6.x-scenario
       
