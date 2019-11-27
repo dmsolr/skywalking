@@ -1,0 +1,19 @@
+name: Docker Image CI
+
+on:
+  push:
+    branches: 
+      - master
+      - test/*
+
+env:
+  LOG_DIR: /tmp/skywalking
+  BUILD_ID: ${{ hashFiles('**/pom.xml') }}
+
+jobs:
+  build:
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v1
+      - name: Build the Docker image
+        run: bash test/plugin/run.sh -f 
