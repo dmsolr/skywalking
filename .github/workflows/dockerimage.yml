@@ -15,7 +15,9 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - name: Build SkyWalking Agent
-        run: ./mvnw clean package -DskipTests -Pagent
+        run: git submodule init 
+          git submodule update 
+          ./mvnw clean package -DskipTests -Pagent
       - name: Build the Docker image
         run: bash test/plugin/run.sh -f
           bash test/plugin/run.sh ehcache-2.x-scenario
