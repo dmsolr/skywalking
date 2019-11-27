@@ -40,8 +40,9 @@ public class CallableOrRunnableActivation extends ClassInstanceMethodsEnhancePlu
     private static final String CALL_METHOD_INTERCEPTOR = "org.apache.skywalking.apm.toolkit.activation.trace.CallableOrRunnableInvokeInterceptor";
     private static final String CALL_METHOD_NAME = "call";
     private static final String RUN_METHOD_NAME = "run";
+    private static final String GET_METHOD_NAME = "get";
 
-    @Override protected ConstructorInterceptPoint[] getConstructorsInterceptPoints() {
+    @Override public ConstructorInterceptPoint[] getConstructorsInterceptPoints() {
         return new ConstructorInterceptPoint[] {
             new ConstructorInterceptPoint() {
                 @Override public ElementMatcher<MethodDescription> getConstructorMatcher() {
@@ -56,12 +57,13 @@ public class CallableOrRunnableActivation extends ClassInstanceMethodsEnhancePlu
     }
 
     @Override
-    protected InstanceMethodsInterceptPoint[] getInstanceMethodsInterceptPoints() {
+    public InstanceMethodsInterceptPoint[] getInstanceMethodsInterceptPoints() {
         return new InstanceMethodsInterceptPoint[] {
             new InstanceMethodsInterceptPoint() {
                 @Override public ElementMatcher<MethodDescription> getMethodsMatcher() {
                     return (named(CALL_METHOD_NAME).and(takesArguments(0)))
-                        .or(named(RUN_METHOD_NAME).and(takesArguments(0)));
+                        .or(named(RUN_METHOD_NAME).and(takesArguments(0)))
+                        .or(named(GET_METHOD_NAME).and(takesArguments(0)));
                 }
 
                 @Override public String getMethodsInterceptor() {

@@ -17,57 +17,73 @@
  */
 
 pipeline {
-    agent {
-        label 'ubuntu'
-    }
-
-    tools {
-        jdk 'JDK 1.8 (latest)'
-    }
+    agent none
 
     options {
         buildDiscarder(logRotator(
-            numToKeepStr: '30',
+            numToKeepStr: '60',
         ))
         timestamps()
         skipStagesAfterUnstable()
-        timeout time: 30, unit: 'MINUTES'
+        timeout(time: 5, unit: 'HOURS')
+    }
+
+    environment {
+        MAVEN_OPTS = '-Dmaven.repo.local=.m2/repository -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -XX:+CMSClassUnloadingEnabled -XX:+UseConcMarkSweepGC -XX:-UseGCOverheadLimit -Xmx3g'
     }
 
     stages {
-        stage('SCM Checkout') {
-            steps {
-                deleteDir()
-                checkout scm
-            }
-        }
+        stage('Install & Test') {
+            parallel {
+                stage('JDK 1.8 on Linux') {
+                    agent {
+                        label 'skywalking || skywalking-se'
+                    }
 
-        stage('Check environment') {
-            steps {
-                sh 'env'
-                sh 'pwd'
-                sh 'ls'
-                sh 'git status'
-            }
-        }
+                    tools {
+                        jdk 'JDK 1.8 (latest)'
+                    }
 
-        stage('Run install') {
-            steps {
-                sh './mvnw org.jacoco:jacoco-maven-plugin:0.8.3:prepare-agent clean install org.jacoco:jacoco-maven-plugin:0.8.3:report coveralls:report --quiet --batch-mode -nsu'
-            }
-        }
+                    stages {
+                        stage('SCM Checkout') {
+                            steps {
+                                deleteDir()
+                                checkout scm
+                                sh 'git submodule update --init'
+                            }
+                        }
 
-        stage('Run install') {
-            steps {
-                sh './mvnw javadoc:javadoc -Dmaven.test.skip=true --quiet'
-            }
-        }
-    }
+                        stage('Test & Report') {
+                            when {
+                                expression {
+                                    return sh(returnStatus: true, script: 'bash tools/ci/ci-build-condition.sh')
+                                }
+                            }
+                            steps {
+                                sh './mvnw -P"agent,backend,ui,dist,CI-with-IT" -DrepoToken=${COVERALLS_REPO_TOKEN} -DpullRequest=${ghprbPullLink} clean cobertura:cobertura verify coveralls:report install'
+                                sh './mvnw javadoc:javadoc -Dmaven.test.skip=true'
+                            }
+                        }
 
-    post {
-        always {
-            junit '**/target/surefire-reports/*.xml'
-            deleteDir()
+                        stage('Check Dependencies Licenses') {
+                            when {
+                                expression {
+                                    return sh(returnStatus: true, script: 'bash tools/ci/ci-build-condition.sh')
+                                }
+                            }
+                            steps {
+                                sh 'tools/dependencies/check-LICENSE.sh'
+                            }
+                        }
+                    }
+
+                    post {
+                        cleanup {
+                            deleteDir()
+                        }
+                    }
+                }
+            }
         }
     }
 }

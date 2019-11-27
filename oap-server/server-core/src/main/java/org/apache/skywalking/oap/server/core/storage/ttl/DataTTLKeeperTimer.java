@@ -18,20 +18,26 @@
 
 package org.apache.skywalking.oap.server.core.storage.ttl;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.concurrent.*;
-import lombok.Setter;
 import org.apache.skywalking.apm.util.RunnableWithExceptionProtection;
-import org.apache.skywalking.oap.server.core.*;
+import org.apache.skywalking.oap.server.core.CoreModule;
+import org.apache.skywalking.oap.server.core.CoreModuleConfig;
 import org.apache.skywalking.oap.server.core.analysis.metrics.Metrics;
-import org.apache.skywalking.oap.server.core.cluster.*;
-import org.apache.skywalking.oap.server.core.storage.*;
-import org.apache.skywalking.oap.server.core.storage.model.*;
+import org.apache.skywalking.oap.server.core.cluster.ClusterModule;
+import org.apache.skywalking.oap.server.core.cluster.ClusterNodesQuery;
+import org.apache.skywalking.oap.server.core.cluster.RemoteInstance;
+import org.apache.skywalking.oap.server.core.storage.IHistoryDeleteDAO;
+import org.apache.skywalking.oap.server.core.storage.StorageModule;
+import org.apache.skywalking.oap.server.core.storage.model.IModelGetter;
+import org.apache.skywalking.oap.server.core.storage.model.Model;
 import org.apache.skywalking.oap.server.library.module.ModuleManager;
 import org.apache.skywalking.oap.server.library.util.CollectionUtils;
-import org.joda.time.DateTime;
-import org.slf4j.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author peng-yongsheng
@@ -43,15 +49,14 @@ public enum DataTTLKeeperTimer {
 
     private ModuleManager moduleManager;
     private ClusterNodesQuery clusterNodesQuery;
-    @Setter private DataTTL dataTTL;
 
-    public void start(ModuleManager moduleManager) {
+    public void start(ModuleManager moduleManager, CoreModuleConfig moduleConfig) {
         this.moduleManager = moduleManager;
         this.clusterNodesQuery = moduleManager.find(ClusterModule.NAME).provider().getService(ClusterNodesQuery.class);
 
         Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(
-            new RunnableWithExceptionProtection(this::delete,
-                t -> logger.error("Remove data in background failure.", t)), 1, 5, TimeUnit.MINUTES);
+            new RunnableWithExceptionProtection(this::delete, t -> logger.error("Remove data in background failure.", t)),
+            moduleConfig.getDataKeeperExecutePeriod(), moduleConfig.getDataKeeperExecutePeriod(), TimeUnit.MINUTES);
     }
 
     private void delete() {
@@ -62,23 +67,20 @@ public enum DataTTLKeeperTimer {
         }
 
         logger.info("Beginning to remove expired metrics from the storage.");
-
-        DateTime currentTime = new DateTime();
-
         IModelGetter modelGetter = moduleManager.find(CoreModule.NAME).provider().getService(IModelGetter.class);
         List<Model> models = modelGetter.getModels();
         models.forEach(model -> {
             if (model.isDeleteHistory()) {
-                execute(model, model.getTtlCalculator().timeBefore(currentTime, dataTTL));
+                execute(model);
             }
         });
     }
 
-    private void execute(Model model, long timeBucketBefore) {
+    private void execute(Model model) {
         try {
-            moduleManager.find(StorageModule.NAME).provider().getService(IHistoryDeleteDAO.class).deleteHistory(model.getName(), Metrics.TIME_BUCKET, timeBucketBefore);
+            moduleManager.find(StorageModule.NAME).provider().getService(IHistoryDeleteDAO.class).deleteHistory(model, Metrics.TIME_BUCKET);
         } catch (IOException e) {
-            logger.warn("History of {} delete failure, time bucket {}", model.getName(), timeBucketBefore);
+            logger.warn("History of {} delete failure", model.getName());
             logger.error(e.getMessage(), e);
         }
     }

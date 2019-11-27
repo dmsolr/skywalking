@@ -19,8 +19,13 @@
 package org.apache.skywalking.oap.server.storage.plugin.elasticsearch;
 
 import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
 import org.apache.skywalking.apm.util.StringUtil;
 import org.apache.skywalking.oap.server.core.CoreModule;
+import org.apache.skywalking.oap.server.core.config.ConfigService;
 import org.apache.skywalking.oap.server.core.storage.IBatchDAO;
 import org.apache.skywalking.oap.server.core.storage.IHistoryDeleteDAO;
 import org.apache.skywalking.oap.server.core.storage.IRegisterLockDAO;
@@ -63,15 +68,12 @@ import org.apache.skywalking.oap.server.storage.plugin.elasticsearch.query.Metri
 import org.apache.skywalking.oap.server.storage.plugin.elasticsearch.query.TopNRecordsQueryEsDAO;
 import org.apache.skywalking.oap.server.storage.plugin.elasticsearch.query.TopologyQueryEsDAO;
 import org.apache.skywalking.oap.server.storage.plugin.elasticsearch.query.TraceQueryEsDAO;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.skywalking.oap.server.storage.plugin.elasticsearch.ttl.ElasticsearchStorageTTL;
 
 /**
- * @author peng-yongsheng
+ * @author peng-yongsheng, jian.tan
  */
 public class StorageModuleElasticsearchProvider extends ModuleProvider {
-
-    private static final Logger logger = LoggerFactory.getLogger(StorageModuleElasticsearchProvider.class);
 
     protected final StorageModuleElasticsearchConfig config;
     protected ElasticSearchClient elasticSearchClient;
@@ -101,17 +103,17 @@ public class StorageModuleElasticsearchProvider extends ModuleProvider {
         if (!StringUtil.isEmpty(config.getNameSpace())) {
             config.setNameSpace(config.getNameSpace().toLowerCase());
         }
-        elasticSearchClient = new ElasticSearchClient(config.getClusterNodes(), config.getNameSpace(), config.getUser(), config.getPassword());
+        elasticSearchClient = new ElasticSearchClient(config.getClusterNodes(), config.getProtocol(), config.getTrustStorePath(), config.getTrustStorePass(), config.getNameSpace(), config.getUser(), config.getPassword());
 
-        this.registerServiceImplementation(IBatchDAO.class, new BatchProcessEsDAO(elasticSearchClient, config.getBulkActions(), config.getBulkSize(), config.getFlushInterval(), config.getConcurrentRequests()));
+        this.registerServiceImplementation(IBatchDAO.class, new BatchProcessEsDAO(elasticSearchClient, config.getBulkActions(), config.getFlushInterval(), config.getConcurrentRequests()));
         this.registerServiceImplementation(StorageDAO.class, new StorageEsDAO(elasticSearchClient));
         this.registerServiceImplementation(IRegisterLockDAO.class, new RegisterLockDAOImpl(elasticSearchClient));
-        this.registerServiceImplementation(IHistoryDeleteDAO.class, new HistoryDeleteEsDAO(elasticSearchClient));
+        this.registerServiceImplementation(IHistoryDeleteDAO.class, new HistoryDeleteEsDAO(getManager(), elasticSearchClient, new ElasticsearchStorageTTL()));
 
-        this.registerServiceImplementation(IServiceInventoryCacheDAO.class, new ServiceInventoryCacheEsDAO(elasticSearchClient));
+        this.registerServiceImplementation(IServiceInventoryCacheDAO.class, new ServiceInventoryCacheEsDAO(elasticSearchClient, config.getResultWindowMaxSize()));
         this.registerServiceImplementation(IServiceInstanceInventoryCacheDAO.class, new ServiceInstanceInventoryCacheDAO(elasticSearchClient));
         this.registerServiceImplementation(IEndpointInventoryCacheDAO.class, new EndpointInventoryCacheEsDAO(elasticSearchClient));
-        this.registerServiceImplementation(INetworkAddressInventoryCacheDAO.class, new NetworkAddressInventoryCacheEsDAO(elasticSearchClient));
+        this.registerServiceImplementation(INetworkAddressInventoryCacheDAO.class, new NetworkAddressInventoryCacheEsDAO(elasticSearchClient, config.getResultWindowMaxSize()));
 
         this.registerServiceImplementation(ITopologyQueryDAO.class, new TopologyQueryEsDAO(elasticSearchClient));
         this.registerServiceImplementation(IMetricsQueryDAO.class, new MetricsQueryEsDAO(elasticSearchClient));
@@ -125,15 +127,17 @@ public class StorageModuleElasticsearchProvider extends ModuleProvider {
 
     @Override
     public void start() throws ModuleStartException {
+        overrideCoreModuleTTLConfig();
+
         try {
             elasticSearchClient.connect();
 
-            StorageEsInstaller installer = new StorageEsInstaller(getManager(), config.getIndexShardsNumber(), config.getIndexReplicasNumber());
+            StorageEsInstaller installer = new StorageEsInstaller(getManager(), config);
             installer.install(elasticSearchClient);
 
             RegisterLockInstaller lockInstaller = new RegisterLockInstaller(elasticSearchClient);
             lockInstaller.install();
-        } catch (StorageException | IOException e) {
+        } catch (StorageException | IOException | KeyStoreException | NoSuchAlgorithmException | KeyManagementException | CertificateException e) {
             throw new ModuleStartException(e.getMessage(), e);
         }
     }
@@ -145,5 +149,14 @@ public class StorageModuleElasticsearchProvider extends ModuleProvider {
     @Override
     public String[] requiredModules() {
         return new String[] {CoreModule.NAME};
+    }
+
+    private void overrideCoreModuleTTLConfig() {
+        ConfigService configService = getManager().find(CoreModule.NAME).provider().getService(ConfigService.class);
+        configService.getDataTTLConfig().setRecordDataTTL(config.getRecordDataTTL());
+        configService.getDataTTLConfig().setMinuteMetricsDataTTL(config.getMinuteMetricsDataTTL());
+        configService.getDataTTLConfig().setHourMetricsDataTTL(config.getHourMetricsDataTTL());
+        configService.getDataTTLConfig().setDayMetricsDataTTL(config.getDayMetricsDataTTL());
+        configService.getDataTTLConfig().setMonthMetricsDataTTL(config.getMonthMetricsDataTTL());
     }
 }

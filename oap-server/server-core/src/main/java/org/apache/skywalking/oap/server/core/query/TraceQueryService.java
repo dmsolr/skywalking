@@ -19,21 +19,38 @@
 package org.apache.skywalking.oap.server.core.query;
 
 import java.io.IOException;
-import java.util.*;
-import org.apache.skywalking.apm.network.language.agent.*;
-import org.apache.skywalking.apm.network.language.agent.v2.*;
-import org.apache.skywalking.oap.server.core.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.LinkedList;
+import java.util.List;
+import org.apache.skywalking.apm.network.language.agent.SpanObject;
+import org.apache.skywalking.apm.network.language.agent.TraceSegmentObject;
+import org.apache.skywalking.apm.network.language.agent.UniqueId;
+import org.apache.skywalking.apm.network.language.agent.v2.SegmentObject;
+import org.apache.skywalking.apm.network.language.agent.v2.SpanObjectV2;
+import org.apache.skywalking.oap.server.core.Const;
+import org.apache.skywalking.oap.server.core.CoreModule;
 import org.apache.skywalking.oap.server.core.analysis.manual.segment.SegmentRecord;
-import org.apache.skywalking.oap.server.core.cache.*;
+import org.apache.skywalking.oap.server.core.cache.EndpointInventoryCache;
+import org.apache.skywalking.oap.server.core.cache.NetworkAddressInventoryCache;
+import org.apache.skywalking.oap.server.core.cache.ServiceInventoryCache;
 import org.apache.skywalking.oap.server.core.config.IComponentLibraryCatalogService;
+import org.apache.skywalking.oap.server.core.query.entity.KeyValue;
+import org.apache.skywalking.oap.server.core.query.entity.LogEntity;
+import org.apache.skywalking.oap.server.core.query.entity.Pagination;
+import org.apache.skywalking.oap.server.core.query.entity.QueryOrder;
+import org.apache.skywalking.oap.server.core.query.entity.Ref;
 import org.apache.skywalking.oap.server.core.query.entity.RefType;
+import org.apache.skywalking.oap.server.core.query.entity.Span;
 import org.apache.skywalking.oap.server.core.query.entity.Trace;
-import org.apache.skywalking.oap.server.core.query.entity.*;
+import org.apache.skywalking.oap.server.core.query.entity.TraceBrief;
+import org.apache.skywalking.oap.server.core.query.entity.TraceState;
 import org.apache.skywalking.oap.server.core.register.EndpointInventory;
+import org.apache.skywalking.oap.server.core.register.ServiceInventory;
 import org.apache.skywalking.oap.server.core.storage.StorageModule;
 import org.apache.skywalking.oap.server.core.storage.query.ITraceQueryDAO;
+import org.apache.skywalking.oap.server.library.module.ModuleManager;
 import org.apache.skywalking.oap.server.library.module.Service;
-import org.apache.skywalking.oap.server.library.module.*;
 import org.apache.skywalking.oap.server.library.util.CollectionUtils;
 
 import static java.util.Objects.nonNull;
@@ -154,10 +171,10 @@ public class TraceQueryService implements Service {
             span.setLayer(spanObject.getSpanLayer().name());
             span.setType(spanObject.getSpanType().name());
 
-            String segmentSpanId = segmentId + Const.SEGMENT_SPAN_SPLIT + String.valueOf(spanObject.getSpanId());
+            String segmentSpanId = segmentId + Const.SEGMENT_SPAN_SPLIT + spanObject.getSpanId();
             span.setSegmentSpanId(segmentSpanId);
 
-            String segmentParentSpanId = segmentId + Const.SEGMENT_SPAN_SPLIT + String.valueOf(spanObject.getParentSpanId());
+            String segmentParentSpanId = segmentId + Const.SEGMENT_SPAN_SPLIT + spanObject.getParentSpanId();
             span.setSegmentParentSpanId(segmentParentSpanId);
 
             if (spanObject.getPeerId() == 0) {
@@ -177,8 +194,12 @@ public class TraceQueryService implements Service {
             }
             span.setEndpointName(endpointName);
 
-            String serviceCode = getServiceInventoryCache().get(serviceId).getName();
-            span.setServiceCode(serviceCode);
+            final ServiceInventory serviceInventory = getServiceInventoryCache().get(serviceId);
+            if (serviceInventory != null) {
+                span.setServiceCode(serviceInventory.getName());
+            } else {
+                span.setServiceCode("unknown");
+            }
 
             if (spanObject.getComponentId() == 0) {
                 span.setComponent(spanObject.getComponent());
@@ -204,14 +225,14 @@ public class TraceQueryService implements Service {
                 StringBuilder segmentIdBuilder = new StringBuilder();
                 for (int i = 0; i < uniqueId.getIdPartsList().size(); i++) {
                     if (i == 0) {
-                        segmentIdBuilder.append(String.valueOf(uniqueId.getIdPartsList().get(i)));
+                        segmentIdBuilder.append(uniqueId.getIdPartsList().get(i));
                     } else {
-                        segmentIdBuilder.append(".").append(String.valueOf(uniqueId.getIdPartsList().get(i)));
+                        segmentIdBuilder.append(".").append(uniqueId.getIdPartsList().get(i));
                     }
                 }
                 ref.setParentSegmentId(segmentIdBuilder.toString());
 
-                span.setSegmentParentSpanId(ref.getParentSegmentId() + Const.SEGMENT_SPAN_SPLIT + String.valueOf(ref.getParentSpanId()));
+                span.setSegmentParentSpanId(ref.getParentSegmentId() + Const.SEGMENT_SPAN_SPLIT + ref.getParentSpanId());
 
                 span.getRefs().add(ref);
             });
@@ -259,10 +280,10 @@ public class TraceQueryService implements Service {
             span.setLayer(spanObject.getSpanLayer().name());
             span.setType(spanObject.getSpanType().name());
 
-            String segmentSpanId = segmentId + Const.SEGMENT_SPAN_SPLIT + String.valueOf(spanObject.getSpanId());
+            String segmentSpanId = segmentId + Const.SEGMENT_SPAN_SPLIT + spanObject.getSpanId();
             span.setSegmentSpanId(segmentSpanId);
 
-            String segmentParentSpanId = segmentId + Const.SEGMENT_SPAN_SPLIT + String.valueOf(spanObject.getParentSpanId());
+            String segmentParentSpanId = segmentId + Const.SEGMENT_SPAN_SPLIT + spanObject.getParentSpanId();
             span.setSegmentParentSpanId(segmentParentSpanId);
 
             if (spanObject.getPeerId() == 0) {
@@ -282,8 +303,12 @@ public class TraceQueryService implements Service {
             }
             span.setEndpointName(endpointName);
 
-            String serviceCode = getServiceInventoryCache().get(serviceId).getName();
-            span.setServiceCode(serviceCode);
+            final ServiceInventory serviceInventory = getServiceInventoryCache().get(serviceId);
+            if (serviceInventory != null) {
+                span.setServiceCode(serviceInventory.getName());
+            } else {
+                span.setServiceCode("unknown");
+            }
 
             if (spanObject.getComponentId() == 0) {
                 span.setComponent(spanObject.getComponent());
@@ -309,14 +334,14 @@ public class TraceQueryService implements Service {
                 StringBuilder segmentIdBuilder = new StringBuilder();
                 for (int i = 0; i < uniqueId.getIdPartsList().size(); i++) {
                     if (i == 0) {
-                        segmentIdBuilder.append(String.valueOf(uniqueId.getIdPartsList().get(i)));
+                        segmentIdBuilder.append(uniqueId.getIdPartsList().get(i));
                     } else {
-                        segmentIdBuilder.append(".").append(String.valueOf(uniqueId.getIdPartsList().get(i)));
+                        segmentIdBuilder.append(".").append(uniqueId.getIdPartsList().get(i));
                     }
                 }
                 ref.setParentSegmentId(segmentIdBuilder.toString());
 
-                span.setSegmentParentSpanId(ref.getParentSegmentId() + Const.SEGMENT_SPAN_SPLIT + String.valueOf(ref.getParentSpanId()));
+                span.setSegmentParentSpanId(ref.getParentSegmentId() + Const.SEGMENT_SPAN_SPLIT + ref.getParentSpanId());
 
                 span.getRefs().add(ref);
             });
@@ -365,6 +390,14 @@ public class TraceQueryService implements Service {
                 rootSpans.add(span);
             }
         });
+        /**
+         * In some cases, there are segment fragments, which could not be linked by Ref,
+         * because of two kinds of reasons.
+         * 1. Multiple leaf segments have no particular order in the storage.
+         * 2. Lost in sampling, agent fail safe, segment lost, even bug.
+         * Sorting the segments makes the trace view more readable.
+         */
+        rootSpans.sort(Comparator.comparing(span -> span.getStartTime()));
         return rootSpans;
     }
 

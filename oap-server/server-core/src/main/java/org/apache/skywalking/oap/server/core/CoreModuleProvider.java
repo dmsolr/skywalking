@@ -19,21 +19,24 @@
 package org.apache.skywalking.oap.server.core;
 
 import java.io.IOException;
+import org.apache.skywalking.oap.server.configuration.api.ConfigurationModule;
 import org.apache.skywalking.oap.server.core.analysis.*;
+import org.apache.skywalking.oap.server.core.analysis.worker.MetricsStreamProcessor;
+import org.apache.skywalking.oap.server.core.analysis.worker.TopNStreamProcessor;
 import org.apache.skywalking.oap.server.core.annotation.AnnotationScan;
 import org.apache.skywalking.oap.server.core.cache.*;
 import org.apache.skywalking.oap.server.core.cluster.*;
+import org.apache.skywalking.oap.server.core.command.CommandService;
 import org.apache.skywalking.oap.server.core.config.*;
+import org.apache.skywalking.oap.server.core.oal.rt.*;
 import org.apache.skywalking.oap.server.core.query.*;
 import org.apache.skywalking.oap.server.core.register.service.*;
 import org.apache.skywalking.oap.server.core.remote.*;
 import org.apache.skywalking.oap.server.core.remote.client.*;
-import org.apache.skywalking.oap.server.core.remote.define.*;
 import org.apache.skywalking.oap.server.core.remote.health.HealthCheckServiceHandler;
 import org.apache.skywalking.oap.server.core.server.*;
 import org.apache.skywalking.oap.server.core.source.*;
 import org.apache.skywalking.oap.server.core.storage.PersistenceTimer;
-import org.apache.skywalking.oap.server.core.storage.model.StorageModels;
 import org.apache.skywalking.oap.server.core.storage.model.*;
 import org.apache.skywalking.oap.server.core.storage.ttl.DataTTLKeeperTimer;
 import org.apache.skywalking.oap.server.core.worker.*;
@@ -54,14 +57,13 @@ public class CoreModuleProvider extends ModuleProvider {
     private RemoteClientManager remoteClientManager;
     private final AnnotationScan annotationScan;
     private final StorageModels storageModels;
-    private final StreamDataMapping streamDataMapping;
     private final SourceReceiverImpl receiver;
+    private OALEngine oalEngine;
 
     public CoreModuleProvider() {
         super();
         this.moduleConfig = new CoreModuleConfig();
         this.annotationScan = new AnnotationScan();
-        this.streamDataMapping = new StreamDataMapping();
         this.storageModels = new StorageModels();
         this.receiver = new SourceReceiverImpl();
     }
@@ -79,12 +81,26 @@ public class CoreModuleProvider extends ModuleProvider {
     }
 
     @Override public void prepare() throws ServiceNotProvidedException, ModuleStartException {
+        StreamAnnotationListener streamAnnotationListener = new StreamAnnotationListener(getManager());
+
         AnnotationScan scopeScan = new AnnotationScan();
         scopeScan.registerListener(new DefaultScopeDefine.Listener());
-        scopeScan.registerListener(DisableRegister.INSTANCE);
-        scopeScan.registerListener(new DisableRegister.SingleDisableScanListener());
         try {
-            scopeScan.scan(null);
+            scopeScan.scan();
+
+            oalEngine = OALEngineLoader.get();
+            oalEngine.setStreamListener(streamAnnotationListener);
+            oalEngine.setDispatcherListener(receiver.getDispatcherManager());
+            oalEngine.start(getClass().getClassLoader());
+        } catch (Exception e) {
+            throw new ModuleStartException(e.getMessage(), e);
+        }
+
+        AnnotationScan oalDisable = new AnnotationScan();
+        oalDisable.registerListener(DisableRegister.INSTANCE);
+        oalDisable.registerListener(new DisableRegister.SingleDisableScanListener());
+        try {
+            oalDisable.scan();
         } catch (IOException e) {
             throw new ModuleStartException(e.getMessage(), e);
         }
@@ -95,6 +111,12 @@ public class CoreModuleProvider extends ModuleProvider {
         }
         if (moduleConfig.getMaxMessageSize() > 0) {
             grpcServer.setMaxMessageSize(moduleConfig.getMaxMessageSize());
+        }
+        if (moduleConfig.getGRPCThreadPoolQueueSize() > 0) {
+            grpcServer.setThreadPoolQueueSize(moduleConfig.getGRPCThreadPoolQueueSize());
+        }
+        if (moduleConfig.getGRPCThreadPoolSize() > 0) {
+            grpcServer.setThreadPoolSize(moduleConfig.getGRPCThreadPoolSize());
         }
         grpcServer.initialize();
 
@@ -111,9 +133,6 @@ public class CoreModuleProvider extends ModuleProvider {
 
         this.registerServiceImplementation(SourceReceiver.class, receiver);
 
-        this.registerServiceImplementation(StreamDataMappingGetter.class, streamDataMapping);
-        this.registerServiceImplementation(StreamDataMappingSetter.class, streamDataMapping);
-
         WorkerInstancesService instancesService = new WorkerInstancesService();
         this.registerServiceImplementation(IWorkerInstanceGetter.class, instancesService);
         this.registerServiceImplementation(IWorkerInstanceSetter.class, instancesService);
@@ -123,16 +142,16 @@ public class CoreModuleProvider extends ModuleProvider {
         this.registerServiceImplementation(IModelGetter.class, storageModels);
         this.registerServiceImplementation(IModelOverride.class, storageModels);
 
-        this.registerServiceImplementation(ServiceInventoryCache.class, new ServiceInventoryCache(getManager()));
+        this.registerServiceImplementation(ServiceInventoryCache.class, new ServiceInventoryCache(getManager(), moduleConfig));
         this.registerServiceImplementation(IServiceInventoryRegister.class, new ServiceInventoryRegister(getManager()));
 
-        this.registerServiceImplementation(ServiceInstanceInventoryCache.class, new ServiceInstanceInventoryCache(getManager()));
+        this.registerServiceImplementation(ServiceInstanceInventoryCache.class, new ServiceInstanceInventoryCache(getManager(), moduleConfig));
         this.registerServiceImplementation(IServiceInstanceInventoryRegister.class, new ServiceInstanceInventoryRegister(getManager()));
 
-        this.registerServiceImplementation(EndpointInventoryCache.class, new EndpointInventoryCache(getManager()));
+        this.registerServiceImplementation(EndpointInventoryCache.class, new EndpointInventoryCache(getManager(), moduleConfig));
         this.registerServiceImplementation(IEndpointInventoryRegister.class, new EndpointInventoryRegister(getManager()));
 
-        this.registerServiceImplementation(NetworkAddressInventoryCache.class, new NetworkAddressInventoryCache(getManager()));
+        this.registerServiceImplementation(NetworkAddressInventoryCache.class, new NetworkAddressInventoryCache(getManager(), moduleConfig));
         this.registerServiceImplementation(INetworkAddressInventoryRegister.class, new NetworkAddressInventoryRegister(getManager()));
 
         this.registerServiceImplementation(TopologyQueryService.class, new TopologyQueryService(getManager()));
@@ -144,10 +163,15 @@ public class CoreModuleProvider extends ModuleProvider {
         this.registerServiceImplementation(AlarmQueryService.class, new AlarmQueryService(getManager()));
         this.registerServiceImplementation(TopNRecordsQueryService.class, new TopNRecordsQueryService(getManager()));
 
-        annotationScan.registerListener(new StreamAnnotationListener(getManager()));
+        this.registerServiceImplementation(CommandService.class, new CommandService(getManager()));
 
-        this.remoteClientManager = new RemoteClientManager(getManager());
+        annotationScan.registerListener(streamAnnotationListener);
+
+        this.remoteClientManager = new RemoteClientManager(getManager(), moduleConfig.getRemoteTimeout());
         this.registerServiceImplementation(RemoteClientManager.class, remoteClientManager);
+
+        MetricsStreamProcessor.getInstance().setEnableDatabaseSession(moduleConfig.isEnableDatabaseSession());
+        TopNStreamProcessor.getInstance().setTopNWorkerReportCycle(moduleConfig.getTopNReportPeriod());
     }
 
     @Override public void start() throws ModuleStartException {
@@ -157,12 +181,18 @@ public class CoreModuleProvider extends ModuleProvider {
 
         try {
             receiver.scan();
+            annotationScan.scan();
 
-            annotationScan.scan(() -> {
-            });
+            oalEngine.notifyAllListeners();
         } catch (IOException | IllegalAccessException | InstantiationException e) {
             throw new ModuleStartException(e.getMessage(), e);
         }
+
+        if (CoreModuleConfig.Role.Mixed.name().equalsIgnoreCase(moduleConfig.getRole()) || CoreModuleConfig.Role.Aggregator.name().equalsIgnoreCase(moduleConfig.getRole())) {
+            RemoteInstance gRPCServerInstance = new RemoteInstance(new Address(moduleConfig.getGRPCHost(), moduleConfig.getGRPCPort(), true));
+            this.getManager().find(ClusterModule.NAME).provider().getService(ClusterRegister.class).registerRemote(gRPCServerInstance);
+        }
+
     }
 
     @Override public void notifyAfterCompleted() throws ModuleStartException {
@@ -173,21 +203,17 @@ public class CoreModuleProvider extends ModuleProvider {
             throw new ModuleStartException(e.getMessage(), e);
         }
 
-        if (CoreModuleConfig.Role.Mixed.name().equalsIgnoreCase(moduleConfig.getRole()) || CoreModuleConfig.Role.Aggregator.name().equalsIgnoreCase(moduleConfig.getRole())) {
-            RemoteInstance gRPCServerInstance = new RemoteInstance(new Address(moduleConfig.getGRPCHost(), moduleConfig.getGRPCPort(), true));
-            this.getManager().find(ClusterModule.NAME).provider().getService(ClusterRegister.class).registerRemote(gRPCServerInstance);
+        PersistenceTimer.INSTANCE.start(getManager(), moduleConfig);
+
+        if (moduleConfig.isEnableDataKeeperExecutor()) {
+            DataTTLKeeperTimer.INSTANCE.start(getManager(), moduleConfig);
         }
-
-        PersistenceTimer.INSTANCE.start(getManager());
-
-        DataTTLKeeperTimer.INSTANCE.setDataTTL(moduleConfig.getDataTTL());
-        DataTTLKeeperTimer.INSTANCE.start(getManager());
 
         CacheUpdateTimer.INSTANCE.start(getManager());
     }
 
     @Override
     public String[] requiredModules() {
-        return new String[] {TelemetryModule.NAME};
+        return new String[] {TelemetryModule.NAME, ConfigurationModule.NAME};
     }
 }
