@@ -19,7 +19,7 @@ jobs:
       - name: Build SkyWalking Agent
         run: ./mvnw clean package -DskipTests -Pagent
       - name: Build the Docker image
-        run: bash test/plugin/run.sh -f
+        run: ./mvnw -f test/plugin/pom.xml clean package -DskipTests docker:build
       - name: Run elasticsearch-5.x-scenario
         run: bash test/plugin/run.sh elasticsearch-5.x-scenario
       - name: Run elasticsearch-6.x-scenario
