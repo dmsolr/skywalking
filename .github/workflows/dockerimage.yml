@@ -14,7 +14,6 @@ jobs:
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v1
-      - uses: actions/cache@v1
       - name: Build SkyWalking Agent
         run: ./mvnw clean package -DskipTests -Pagent
       - name: Build the Docker image
