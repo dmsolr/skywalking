@@ -305,7 +305,7 @@ jobs:
       - name: Build the Docker image
         run: ./mvnw -f test/plugin/pom.xml clean package -DskipTests docker:build -DBUILD_NO=local >/dev/null
       - name: Run redisson 3.x (37)
-       run: bash test/plugin/run.sh redisson-scenario
+        run: bash test/plugin/run.sh redisson-scenario
 
   Group11:
     runs-on: ubuntu-18.04
