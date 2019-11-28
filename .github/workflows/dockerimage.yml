@@ -43,7 +43,6 @@ jobs:
         with:
           java-version: 8
       - name: Build SkyWalking Agent
-        id: build
         run: bash tools/ci/agent-build-condition.sh || ./mvnw clean package -DskipTests -Pagent
       - name: Build the Docker image
         run: bash tools/ci/agent-build-condition.sh || ./mvnw -f test/plugin/pom.xml clean package -DskipTests docker:build -DBUILD_NO=local
