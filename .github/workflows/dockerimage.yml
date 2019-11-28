@@ -21,9 +21,7 @@ on:
       - master
       - test/*
 env:
-  SKIP_TEST: true
-  DOCKER_DIR: ./docker
-  LOG_DIR: /tmp/skywalking
+  SKIP_TEST: ${{ bash tools/ci/agent-build-condition.sh }}
 
 jobs:
   build:
@@ -49,8 +47,3 @@ jobs:
         run: bash tools/ci/agent-build-condition.sh || bash test/plugin/run.sh elasticsearch-5.x-scenario
       - name: Run elasticsearch-6.x-scenario
         run: bash tools/ci/agent-build-condition.sh || bash test/plugin/run.sh elasticsearch-6.x-scenario
-      - uses: actions/upload-artifact@v1.0.0
-        continue-on-error: true
-        with:
-          name: logs
-          path: /tmp/skywalking
