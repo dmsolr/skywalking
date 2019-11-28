@@ -29,7 +29,6 @@ jobs:
       fail-fast: true
       max-parallel: 4
     steps:
-      - continue-on-error: false
       - uses: actions/checkout@v1
         with:
           submodules: true
