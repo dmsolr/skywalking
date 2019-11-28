@@ -37,7 +37,8 @@ jobs:
         with:
           java-version: 8
       - name: test
-        run: echo $(bash tools/ci/agent-build-condition.sh)
+        env: CONTEXT: ${{ github }}
+        run: echo "${CONTEXT}"
       - name: Build SkyWalking Agent
         run: bash tools/ci/agent-build-condition.sh ||  ./mvnw clean package -DskipTests -Pagent >/dev/null
       - name: Build the Docker image
