@@ -13,13 +13,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-name: Docker Image CI
+name: Agent Plugins Tests
 
-on:
-  push:
-    branches: 
-      - master
-      - test/*
+on: [pull_request]
 
 jobs:
   group1:
@@ -44,7 +40,43 @@ jobs:
         run: ./mvnw clean package -DskipTests -Pagent
       - name: Build the Docker image
         run: ./mvnw -f test/plugin/pom.xml clean package -DskipTests docker:build -DBUILD_NO=local
-      - name: Run elasticsearch-5.x-scenario
-        run: bash test/plugin/run.sh elasticsearch-5.x-scenario
-      - name: Run elasticsearch-6.x-scenario
-        run: bash test/plugin/run.sh elasticsearch-6.x-scenario
+      - name: spring-tx 4.x+ (10)
+        run: bashtest/plugin/run.sh spring-tx-scenario
+      - name: spring 4.3.x-5.2.x (54)
+        run: bashtest/plugin/run.sh spring-4.3.x-scenario
+      - name: dubbo 2.5.x-2.6.x (10)
+        run: bashtest/plugin/run.sh dubbo-2.5.x-scenario
+      - name: dubbo 2.7.x (4)
+        run: bashtest/plugin/run.sh dubbo-2.7.x-scenario
+      - name: okhttp 3.0.x-3.14.x (34)
+        run: bashtest/plugin/run.sh okhttp-scenario
+  group2:
+    runs-on: ubuntu-18.04
+    timeout-minutes: 60
+    strategy:
+      fail-fast: true
+    steps:
+      - uses: actions/checkout@v1
+        with:
+          submodules: true
+      - uses: actions/cache@v1
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+      - uses: actions/setup-java@v1
+        with:
+          java-version: 8
+      - name: Build SkyWalking Agent
+        run: ./mvnw clean package -DskipTests -Pagent
+      - name: Build the Docker image
+        run: ./mvnw -f test/plugin/pom.xml clean package -DskipTests docker:build -DBUILD_NO=local
+      - name: redisson 3.x (37)
+        run: bashtest/plugin/run.sh redisson-scenario
+      - name: spring 3.1.x-4.0.x (25)
+        run: bashtest/plugin/run.sh spring-3.1.x-scenario
+      - name: spring-cloud-gateway 2.1.x (3)
+        run: bashtest/plugin/run.sh gateway-scenario
+      - name: elasticsearch 5.x (3)
+        run: bashtest/plugin/run.sh elasticsearch-5.x-scenario
