@@ -17,10 +17,12 @@ jobs:
           ${{ runner.os }}-maven-
     - name: Set environment
       run: export MAVEN_OPTS='-Dmaven.repo.local=.m2/repository -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -XX:+CMSClassUnloadingEnabled -XX:+UseConcMarkSweepGC -XX:-UseGCOverheadLimit -Xmx3g'
-    - name: Build the Docker image && Compile Test Codes
+    - name: Build the Docker image
+      run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
+    - name: Compile Test Codes
+      run: ./mvnw checkstyle:check apache-rat:check
+    - name: Install
       run: |
-        docker build . --file Dockerfile --tag my-image-name:$(date +%s)
-        ./mvnw checkstyle:check apache-rat:check
         ./mvnw -Dcheckstyle.skip -Drat.skip -T2 -Dmaven.compile.fork -Dmaven.compiler.maxmem=3072 -DskipTests clean install
         ./mvnw -f test/e2e/pom.xml -pl e2e-base clean install
     - name: Single Node Tests(JDK8)
