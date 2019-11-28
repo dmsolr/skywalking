@@ -16,7 +16,7 @@
 
 name: Agent Plugins Tests
 
-on: [pull_request, push]
+on: [pull_request]
 
 jobs:
   Group1:

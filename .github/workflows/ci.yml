@@ -24,7 +24,7 @@ jobs:
       - name: 'Install & Test'
         run: |
           export MAVEN_OPTS='-Dmaven.repo.local=.m2/repository -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -XX:+CMSClassUnloadingEnabled -XX:+UseConcMarkSweepGC -XX:-UseGCOverheadLimit -Xmx3g'
-          ./mvnw -P"agent,backend,ui,dist,CI-with-IT" -DrepoToken=iiH0Deepi2t2dHJ3wWMBUg6XcOHBnsyUI -DpullRequest=${ghprbPullLink} clean cobertura:cobertura verify coveralls:report install
+          ./mvnw -P"agent,backend,ui,dist,CI-with-IT" clean verify install
           ./mvnw javadoc:javadoc -Dmaven.test.skip=true
       - name: 'Check Dependencies Licenses'
         run: tools/dependencies/check-LICENSE.sh
