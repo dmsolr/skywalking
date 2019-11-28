@@ -37,7 +37,8 @@ jobs:
         with:
           java-version: 8
       - name: test
-        env: CONTEXT: ${{ github }}
+        env: 
+          CONTEXT: ${{ github }}
         run: echo "${CONTEXT}"
       - name: Build SkyWalking Agent
         run: bash tools/ci/agent-build-condition.sh ||  ./mvnw clean package -DskipTests -Pagent >/dev/null
