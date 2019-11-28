@@ -22,14 +22,14 @@ on:
       - test/*
 
 jobs:
-  build:
+  group1:
     runs-on: ubuntu-18.04
     timeout-minutes: 60
     strategy:
       fail-fast: true
-      max-parallel: 10
-
+      max-parallel: 4
     steps:
+      - continue-on-error: false
       - uses: actions/checkout@v1
         with:
           submodules: true
@@ -42,11 +42,8 @@ jobs:
       - uses: actions/setup-java@v1
         with:
           java-version: 8
-  group1:
-    runs-on: ubuntu-18.04
-    needs : build
-    steps:
       - name: Build SkyWalking Agent
+        id: build
         run: bash tools/ci/agent-build-condition.sh || ./mvnw clean package -DskipTests -Pagent
       - name: Build the Docker image
         run: bash tools/ci/agent-build-condition.sh || ./mvnw -f test/plugin/pom.xml clean package -DskipTests docker:build -DBUILD_NO=local
