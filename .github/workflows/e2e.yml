@@ -3,7 +3,7 @@ name: E2E
 on: [push]
 
 jobs:
-  Single Node:
+  Single_Node:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
