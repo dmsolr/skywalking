@@ -21,18 +21,9 @@ jobs:
       - uses: actions/setup-java@v1
         with:
           java-version: 8
-      - name: Dump GitHub context
-        env:
-          GITHUB_CONTEXT: ${{ toJson(github) }}
-          DM: ${{ toJson(github.event) }}
-        run: |
-          echo "$GITHUB_CONTEXT"
-          echo "$DM"
-          echo "${github.event}"
-      - name: 'set env'
-        run: export MAVEN_OPTS='-Dmaven.repo.local=.m2/repository -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -XX:+CMSClassUnloadingEnabled -XX:+UseConcMarkSweepGC -XX:-UseGCOverheadLimit -Xmx3g'
       - name: 'Install & Test'
         run: |
+          export MAVEN_OPTS='-Dmaven.repo.local=.m2/repository -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -XX:+CMSClassUnloadingEnabled -XX:+UseConcMarkSweepGC -XX:-UseGCOverheadLimit -Xmx3g'
           ./mvnw -P"agent,backend,ui,dist,CI-with-IT" -DrepoToken=iiH0Deepi2t2dHJ3wWMBUg6XcOHBnsyUI -DpullRequest=${ghprbPullLink} clean cobertura:cobertura verify coveralls:report install
           ./mvnw javadoc:javadoc -Dmaven.test.skip=true
       - name: 'Check Dependencies Licenses'
