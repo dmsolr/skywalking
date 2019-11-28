@@ -1,6 +1,6 @@
 name: CI AND IT
 
-on: [pull_request]
+on: [pull_request, push]
 
 jobs:
   CI:
@@ -21,6 +21,10 @@ jobs:
       - uses: actions/setup-java@v1
         with:
           java-version: 8
+      - name: Dump GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GITHUB_CONTEXT"
       - name: 'set env'
         run: export MAVEN_OPTS='-Dmaven.repo.local=.m2/repository -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -XX:+CMSClassUnloadingEnabled -XX:+UseConcMarkSweepGC -XX:-UseGCOverheadLimit -Xmx3g'
       - name: 'Install & Test'
