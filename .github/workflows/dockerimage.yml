@@ -27,7 +27,6 @@ jobs:
     timeout-minutes: 60
     strategy:
       fail-fast: true
-      max-parallel: 4
     steps:
       - uses: actions/checkout@v1
         with:
@@ -42,10 +41,10 @@ jobs:
         with:
           java-version: 8
       - name: Build SkyWalking Agent
-        run: bash tools/ci/agent-build-condition.sh || ./mvnw clean package -DskipTests -Pagent
+        run: ./mvnw clean package -DskipTests -Pagent
       - name: Build the Docker image
-        run: bash tools/ci/agent-build-condition.sh || ./mvnw -f test/plugin/pom.xml clean package -DskipTests docker:build -DBUILD_NO=local
+        run: ./mvnw -f test/plugin/pom.xml clean package -DskipTests docker:build -DBUILD_NO=local
       - name: Run elasticsearch-5.x-scenario
-        run: bash tools/ci/agent-build-condition.sh || bash test/plugin/run.sh elasticsearch-5.x-scenario
+        run: bash test/plugin/run.sh elasticsearch-5.x-scenario
       - name: Run elasticsearch-6.x-scenario
-        run: bash tools/ci/agent-build-condition.sh || bash test/plugin/run.sh elasticsearch-6.x-scenario
+        run: bash test/plugin/run.sh elasticsearch-6.x-scenario
