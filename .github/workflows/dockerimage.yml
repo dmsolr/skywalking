@@ -5,6 +5,10 @@ on:
     branches: 
       - master
       - test/*
+env:
+  SKIP_TEST: true
+  DOCKER_DIR: ./docker
+  LOG_DIR: /tmp/skywalking
 
 jobs:
   build:
@@ -23,11 +27,15 @@ jobs:
         with:
           java-version: 8
       - name: Build SkyWalking Agent
-        run: ./mvnw clean package -DskipTests -Pagent
+        run: bash tools/ci/agent-build-condition.sh && ./mvnw clean package -DskipTests -Pagent
       - name: Build the Docker image
-        run: ./mvnw -f test/plugin/pom.xml clean package -DskipTests docker:build -DBUILD_NO=action
+        run: bash tools/ci/agent-build-condition.sh && ./mvnw -f test/plugin/pom.xml clean package -DskipTests docker:build -DBUILD_NO=local
       - name: Run elasticsearch-5.x-scenario
-        run: export BUILD_NO=action && bash test/plugin/run.sh elasticsearch-5.x-scenario
+        run: bash tools/ci/agent-build-condition.sh && bash test/plugin/run.sh elasticsearch-5.x-scenario
       - name: Run elasticsearch-6.x-scenario
-        run: export BUILD_NO=action && bash test/plugin/run.sh elasticsearch-6.x-scenario
-      
+        run: bash tools/ci/agent-build-condition.sh && bash test/plugin/run.sh elasticsearch-6.x-scenario
+      - uses: actions/upload-artifact@v1.0.0
+        continue-on-error: true
+        with:
+          name: logs
+          path: /tmp/skywalking
