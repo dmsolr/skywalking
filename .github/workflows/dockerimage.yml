@@ -15,7 +15,7 @@
 # limitations under the License.
 name: Agent Plugins Tests
 
-on: [push, pull_request]
+on: [pull_request, push]
 
 jobs:
   group1:
@@ -39,17 +39,17 @@ jobs:
       - name: Build SkyWalking Agent
         run: ./mvnw clean package -DskipTests -Pagent
       - name: Build the Docker image
-        run: ./mvnw -f test/plugin/pom.xml clean package -DskipTests docker:build -DBUILD_NO=local
-      - name: spring-tx 4.x+ (10)
-        run: bashtest/plugin/run.sh spring-tx-scenario
-      - name: spring 4.3.x-5.2.x (54)
-        run: bashtest/plugin/run.sh spring-4.3.x-scenario
-      - name: dubbo 2.5.x-2.6.x (10)
-        run: bashtest/plugin/run.sh dubbo-2.5.x-scenario
-      - name: dubbo 2.7.x (4)
-        run: bashtest/plugin/run.sh dubbo-2.7.x-scenario
-      - name: okhttp 3.0.x-3.14.x (34)
-        run: bashtest/plugin/run.sh okhttp-scenario
+        run: bash tools/ci/agent-build-condition.sh &&  ./mvnw -f test/plugin/pom.xml clean package -DskipTests docker:build -DBUILD_NO=local
+      - name: Run spring-tx 4.x+ (10)
+        run: bash tools/ci/agent-build-condition.sh &&  bash test/plugin/run.sh spring-tx-scenario
+      - name: Run spring 4.3.x-5.2.x (54)
+        run: bash tools/ci/agent-build-condition.sh &&  bash test/plugin/run.sh spring-4.3.x-scenario
+      - name: Run dubbo 2.5.x-2.6.x (10)
+        run: bash tools/ci/agent-build-condition.sh &&  bash test/plugin/run.sh dubbo-2.5.x-scenario
+      - name: Run dubbo 2.7.x (4)
+        run: bash tools/ci/agent-build-condition.sh &&  bash test/plugin/run.sh dubbo-2.7.x-scenario
+      - name: Run okhttp 3.0.x-3.14.x (34)
+        run: bash tools/ci/agent-build-condition.sh &&  bash test/plugin/run.sh okhttp-scenario
   group2:
     runs-on: ubuntu-18.04
     timeout-minutes: 60
@@ -69,14 +69,14 @@ jobs:
         with:
           java-version: 8
       - name: Build SkyWalking Agent
-        run: ./mvnw clean package -DskipTests -Pagent
+        run: bash tools/ci/agent-build-condition.sh &&  ./mvnw clean package -DskipTests -Pagent
       - name: Build the Docker image
-        run: ./mvnw -f test/plugin/pom.xml clean package -DskipTests docker:build -DBUILD_NO=local
-      - name: redisson 3.x (37)
-        run: bashtest/plugin/run.sh redisson-scenario
-      - name: spring 3.1.x-4.0.x (25)
-        run: bashtest/plugin/run.sh spring-3.1.x-scenario
-      - name: spring-cloud-gateway 2.1.x (3)
-        run: bashtest/plugin/run.sh gateway-scenario
-      - name: elasticsearch 5.x (3)
-        run: bashtest/plugin/run.sh elasticsearch-5.x-scenario
+        run: bash tools/ci/agent-build-condition.sh &&  ./mvnw -f test/plugin/pom.xml clean package -DskipTests docker:build -DBUILD_NO=local
+      - name: Run redisson 3.x (37)
+        run: bash tools/ci/agent-build-condition.sh &&  bash test/plugin/run.sh redisson-scenario
+      - name: Run spring 3.1.x-4.0.x (25)
+        run: bash tools/ci/agent-build-condition.sh &&  bash test/plugin/run.sh spring-3.1.x-scenario
+      - name: Run spring-cloud-gateway 2.1.x (3)
+        run: bash tools/ci/agent-build-condition.sh &&  bash test/plugin/run.sh gateway-scenario
+      - name: Run elasticsearch 5.x (3)
+        run: bash tools/ci/agent-build-condition.sh &&  bash test/plugin/run.sh elasticsearch-5.x-scenario
