@@ -144,7 +144,7 @@ pipeline {
             }
         }
     }
-    
+   
     post {
         cleanup {
             sh 'bash test/plugin/run.sh --cleanup'
