@@ -20,12 +20,15 @@ on:
     branches: 
       - master
       - test/*
-env:
-  SKIP_TEST: ${{ bash tools/ci/agent-build-condition.sh }}
 
 jobs:
   build:
     runs-on: ubuntu-18.04
+    timeout-minutes: 60
+    strategy:
+      fail-fast: true
+      max-parallel: 10
+
     steps:
       - uses: actions/checkout@v1
         with:
@@ -39,6 +42,10 @@ jobs:
       - uses: actions/setup-java@v1
         with:
           java-version: 8
+  group1:
+    runs-on: ubuntu-18.04
+    needs : build
+    steps:
       - name: Build SkyWalking Agent
         run: bash tools/ci/agent-build-condition.sh || ./mvnw clean package -DskipTests -Pagent
       - name: Build the Docker image
