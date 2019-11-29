@@ -221,7 +221,6 @@ done
 
 echo -e "\033[33m${scenario_name} has already sumbitted\033[0m"
 
-# wait to finish
 while [[ `ls -l ${task_state_house} |grep -c RUNNING` -gt 0 ]]; do
     sleep 1
 done
