@@ -19,11 +19,12 @@ name: Agent Plugins Tests
 on: 
   push:
     paths: 
-      - "apm-commons/**"
-      - "apm-protocol/**"
-      - "apm-sniffer/**"
-      - "test/plugin/**"
-      - "apm-application-toolkit/**"
+    - 'apm-commons/**'
+    - 'apm-protocol/**'
+    - 'apm-sniffer/**'
+    - 'test/plugin/**'
+    - 'apm-application-toolkit/**'
+    - '.github/**'
 
 jobs:
   Group1:
