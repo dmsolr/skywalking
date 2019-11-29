@@ -16,7 +16,14 @@
 
 name: Agent Plugins Tests
 
-on: [pull_request]
+on: 
+  push:
+    paths: 
+      - "apm-commons/**"
+      - "apm-protocol/**"
+      - "apm-sniffer/**"
+      - "test/plugin/**"
+      - "apm-application-toolkit/**"
 
 jobs:
   Group1:
