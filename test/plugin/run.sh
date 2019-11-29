@@ -26,7 +26,6 @@ mvnw=${home}/../../mvnw
 agent_home=${home}"/../../skywalking-agent"
 scenarios_home="${home}/scenarios"
 
-
 print_help() {
     echo  "Usage: run.sh [OPTION] SCENARIO_NAME"
     echo -e "\t-f, --force_build \t\t do force to build Plugin-Test tools and images"
