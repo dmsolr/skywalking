@@ -30,10 +30,9 @@ import static org.apache.skywalking.oap.server.core.source.DefaultScopeDefine.*;
 /**
  * Some tables, such as Metrics and SegmentRecord, they are stored in InfluxDB.
  * We don't need to create the tables explicitly in InfluxDB.
- * <p>
+ *
  * In different with InfluxDB, we must execute DDL for MySQL.
  */
-// FIXME need to change to MySQlTableInstaller
 public class H2Installer extends H2TableInstaller {
 
     public H2Installer(ModuleManager moduleManager) {

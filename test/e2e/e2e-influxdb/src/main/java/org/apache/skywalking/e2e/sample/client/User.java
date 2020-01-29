@@ -16,30 +16,41 @@
  *
  */
 
-package org.apache.skywalking.oap.server.storage.plugin.influxdb;
+package org.apache.skywalking.e2e.sample.client;
 
-import lombok.Getter;
-import lombok.Setter;
-import org.apache.skywalking.oap.server.library.module.ModuleConfig;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
 
-@Setter
-@Getter
-public class InfluxStorageConfig extends ModuleConfig {
-    private String metabaseDriver;
-    private String metabaseUrl;
-    private String metabaseUser;
-    private String metabasePassword;
+/**
+ * @author kezhenxu94
+ */
+@Entity
+public class User {
+    public User() {
+    }
 
-    private String metabaseType;
+    @Id
+    @GeneratedValue
+    private Long id;
 
-    private int metadataQueryMaxSize = 5000;
+    @Column
+    private String name;
 
-    private String url;
-    private String user;
-    private String password;
-    private String database;
+    public Long getId() {
+        return id;
+    }
 
-    private String recordDataRP;
-    private String monthMetricsDataRP;
-    private String otherMetricsDataRP;
+    public void setId(final Long id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(final String name) {
+        this.name = name;
+    }
 }

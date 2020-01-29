@@ -1,10 +1,9 @@
-# Licensed to the Apache Software Foundation (ASF) under one
-# or more contributor license agreements.  See the NOTICE file
-# distributed with this work for additional information
-# regarding copyright ownership.  The ASF licenses this file
-# to you under the Apache License, Version 2.0 (the
-# "License"); you may not use this file except in compliance
-# with the License.  You may obtain a copy of the License at
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
 #
 #     http://www.apache.org/licenses/LICENSE-2.0
 #
@@ -16,8 +15,8 @@
 
 cluster:
   standalone:
-  # Please check your ZooKeeper is 3.5+, However, it is also compatible with ZooKeeper 3.4.x. Replace the ZooKeeper 3.5+
-  # library the oap-libs folder with your ZooKeeper 3.4.x library.
+#   Please check your ZooKeeper is 3.5+, However, it is also compatible with ZooKeeper 3.4.x. Replace the ZooKeeper 3.5+
+#   library the oap-libs folder with your ZooKeeper 3.4.x library.
 #  zookeeper:
 #    nameSpace: ${SW_NAMESPACE:""}
 #    hostPort: ${SW_CLUSTER_ZK_HOST_PORT:localhost:2181}
@@ -37,13 +36,11 @@ cluster:
 #    serviceName: ${SW_SERVICE_NAME:"SkyWalking_OAP_Cluster"}
 #     Consul cluster nodes, example: 10.0.0.1:8500,10.0.0.2:8500,10.0.0.3:8500
 #    hostPort: ${SW_CLUSTER_CONSUL_HOST_PORT:localhost:8500}
-#    # Consul aclToken
-#    #aclToken: ${SW_CLUSTER_CONSUL_ACLTOKEN}
 #  nacos:
 #    serviceName: ${SW_SERVICE_NAME:"SkyWalking_OAP_Cluster"}
+#    # Nacos Configuration namespace
+#    namespace: ${SW_CLUSTER_NACOS_NAMESPACE:"public"}
 #    hostPort: ${SW_CLUSTER_NACOS_HOST_PORT:localhost:8848}
-#  # Nacos Configuration namespace
-#    namespace: 'public'
 #  etcd:
 #    serviceName: ${SW_SERVICE_NAME:"SkyWalking_OAP_Cluster"}
 #     etcd cluster nodes, example: 10.0.0.1:2379,10.0.0.2:2379,10.0.0.3:2379
@@ -74,14 +71,13 @@ core:
     # Cache metric data for 1 minute to reduce database queries, and if the OAP cluster changes within that minute,
     # the metrics may not be accurate within that minute.
     enableDatabaseSession: ${SW_CORE_ENABLE_DATABASE_SESSION:true}
-    topNReportPeriod: ${SW_CORE_TOPN_REPORT_PERIOD:10} # top_n record worker report cycle, unit is minute
 storage:
 #  elasticsearch:
 #    nameSpace: ${SW_NAMESPACE:""}
 #    clusterNodes: ${SW_STORAGE_ES_CLUSTER_NODES:localhost:9200}
 #    protocol: ${SW_STORAGE_ES_HTTP_PROTOCOL:"http"}
-#    trustStorePath: ${SW_SW_STORAGE_ES_SSL_JKS_PATH:"../es_keystore.jks"}
-#    trustStorePass: ${SW_SW_STORAGE_ES_SSL_JKS_PASS:""}
+#    #trustStorePath: ${SW_SW_STORAGE_ES_SSL_JKS_PATH:"../es_keystore.jks"}
+#    #trustStorePass: ${SW_SW_STORAGE_ES_SSL_JKS_PASS:""}
 #    user: ${SW_ES_USER:""}
 #    password: ${SW_ES_PASSWORD:""}
 #    indexShardsNumber: ${SW_STORAGE_ES_INDEX_SHARDS_NUMBER:2}
@@ -94,29 +90,6 @@ storage:
 #    bulkActions: ${SW_STORAGE_ES_BULK_ACTIONS:1000} # Execute the bulk every 1000 requests
 #    flushInterval: ${SW_STORAGE_ES_FLUSH_INTERVAL:10} # flush the bulk every 10 seconds whatever the number of requests
 #    concurrentRequests: ${SW_STORAGE_ES_CONCURRENT_REQUESTS:2} # the number of concurrent requests
-#    resultWindowMaxSize: ${SW_STORAGE_ES_QUERY_MAX_WINDOW_SIZE:10000}
-#    metadataQueryMaxSize: ${SW_STORAGE_ES_QUERY_MAX_SIZE:5000}
-#    segmentQueryMaxSize: ${SW_STORAGE_ES_QUERY_SEGMENT_SIZE:200}
-#    profileTaskQueryMaxSize: ${SW_STORAGE_ES_QUERY_PROFILE_TASK_SIZE:200}
-#  elasticsearch7:
-#    nameSpace: ${SW_NAMESPACE:""}
-#    clusterNodes: ${SW_STORAGE_ES_CLUSTER_NODES:localhost:9200}
-#    protocol: ${SW_STORAGE_ES_HTTP_PROTOCOL:"http"}
-#    trustStorePath: ${SW_SW_STORAGE_ES_SSL_JKS_PATH:"../es_keystore.jks"}
-#    trustStorePass: ${SW_SW_STORAGE_ES_SSL_JKS_PASS:""}
-#    user: ${SW_ES_USER:""}
-#    password: ${SW_ES_PASSWORD:""}
-#    indexShardsNumber: ${SW_STORAGE_ES_INDEX_SHARDS_NUMBER:2}
-#    indexReplicasNumber: ${SW_STORAGE_ES_INDEX_REPLICAS_NUMBER:0}
-#    # Those data TTL settings will override the same settings in core module.
-#    recordDataTTL: ${SW_STORAGE_ES_RECORD_DATA_TTL:7} # Unit is day
-#    otherMetricsDataTTL: ${SW_STORAGE_ES_OTHER_METRIC_DATA_TTL:45} # Unit is day
-#    monthMetricsDataTTL: ${SW_STORAGE_ES_MONTH_METRIC_DATA_TTL:18} # Unit is month
-#    # Batch process setting, refer to https://www.elastic.co/guide/en/elasticsearch/client/java-api/5.5/java-docs-bulk-processor.html
-#    bulkActions: ${SW_STORAGE_ES_BULK_ACTIONS:1000} # Execute the bulk every 1000 requests
-#    flushInterval: ${SW_STORAGE_ES_FLUSH_INTERVAL:10} # flush the bulk every 10 seconds whatever the number of requests
-#    concurrentRequests: ${SW_STORAGE_ES_CONCURRENT_REQUESTS:2} # the number of concurrent requests
-#    resultWindowMaxSize: ${SW_STORAGE_ES_QUERY_MAX_WINDOW_SIZE:10000}
 #    metadataQueryMaxSize: ${SW_STORAGE_ES_QUERY_MAX_SIZE:5000}
 #    segmentQueryMaxSize: ${SW_STORAGE_ES_QUERY_SEGMENT_SIZE:200}
 #    profileTaskQueryMaxSize: ${SW_STORAGE_ES_QUERY_PROFILE_TASK_SIZE:200}
@@ -135,17 +108,6 @@ storage:
 #      dataSource.prepStmtCacheSqlLimit: ${SW_DATA_SOURCE_PREP_STMT_CACHE_SQL_LIMIT:2048}
 #      dataSource.useServerPrepStmts: ${SW_DATA_SOURCE_USE_SERVER_PREP_STMTS:true}
 #    metadataQueryMaxSize: ${SW_STORAGE_MYSQL_QUERY_MAX_SIZE:5000}
-  influx:
-    metabaseDrive: ${SW_STORAGE_METABASE_DRIVER:org.h2.jdbcx.JdbcDataSource}
-    metabaseUrl: ${SW_STORAGE_METABASE_URL:jdbc:h2:mem:skywalking-oap-db}
-    metabaseUser: ${SW_STORAGE_METABASE_USER:sa}
-    metabasePassword: ${SW_STORAGE_METABASE_PASSWORD:}
-    metabaseType: ${SW_STORAGE_METABASE_TYPE:H2}
-    url: ${SW_STORAGE_URL:http://localhost:8086}
-    user: ${SW_STORAGE_USER:root}
-    password: ${SW_STORAGE_PASSWORD:""}
-    database: ${SW_STORAGE_DATABASE:SKYWALKING}
-    metadataQueryMaxSize: ${SW_STORAGE_H2_QUERY_MAX_SIZE:5000}
 receiver-sharing-server:
   default:
 receiver-register:
@@ -162,6 +124,8 @@ receiver-jvm:
   default:
 receiver-clr:
   default:
+#receiver-so11y:
+#  default:
 receiver-profile:
   default:
 service-mesh:
@@ -180,6 +144,10 @@ envoy-metric:
 #    host: ${SW_RECEIVER_ZIPKIN_HOST:0.0.0.0}
 #    port: ${SW_RECEIVER_ZIPKIN_PORT:9411}
 #    contextPath: ${SW_RECEIVER_ZIPKIN_CONTEXT_PATH:/}
+#receiver_jaeger:
+#  default:
+#    gRPCHost: ${SW_RECEIVER_JAEGER_HOST:0.0.0.0}
+#    gRPCPort: ${SW_RECEIVER_JAEGER_PORT:14250}
 query:
   graphql:
     path: ${SW_QUERY_GRAPHQL_PATH:/graphql}
@@ -187,6 +155,13 @@ alarm:
   default:
 telemetry:
   none:
+#  prometheus:
+#    host: ${SW_TELEMETRY_PROMETHEUS_HOST:0.0.0.0}
+#    port: ${SW_TELEMETRY_PROMETHEUS_PORT:1234}
+#  so11y:
+#    prometheusExporterEnabled: ${SW_TELEMETRY_SO11Y_PROMETHEUS_ENABLED:true}
+#    prometheusExporterHost: ${SW_TELEMETRY_PROMETHEUS_HOST:0.0.0.0}
+#    prometheusExporterPort: ${SW_TELEMETRY_PROMETHEUS_PORT:1234}
 configuration:
   none:
 #  apollo:
@@ -205,7 +180,7 @@ configuration:
 #    # Nacos Configuration namespace
 #    namespace: ''
 #    # Unit seconds, sync period. Default fetch every 60 seconds.
-#    period : 60
+#    period : 5
 #    # the name of current cluster, set the name if you want to upstream system known.
 #    clusterName: "default"
 #  zookeeper:
@@ -225,8 +200,6 @@ configuration:
 #    hostAndPorts: ${consul.address}
 #    # Sync period in seconds. Defaults to 60 seconds.
 #    period: 1
-#    # Consul aclToken
-#    #aclToken: ${consul.aclToken}
 
 #exporter:
 #  grpc:
