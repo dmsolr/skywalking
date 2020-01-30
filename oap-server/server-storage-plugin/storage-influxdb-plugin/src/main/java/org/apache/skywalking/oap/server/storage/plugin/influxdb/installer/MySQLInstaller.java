@@ -21,10 +21,7 @@ import org.apache.skywalking.oap.server.core.storage.StorageException;
 import org.apache.skywalking.oap.server.core.storage.model.Model;
 import org.apache.skywalking.oap.server.library.client.Client;
 import org.apache.skywalking.oap.server.library.module.ModuleManager;
-import org.apache.skywalking.oap.server.storage.plugin.jdbc.TableMetaInfo;
 import org.apache.skywalking.oap.server.storage.plugin.jdbc.mysql.MySQLTableInstaller;
-
-import static org.apache.skywalking.oap.server.core.source.DefaultScopeDefine.*;
 
 public class MySQLInstaller extends MySQLTableInstaller {
 
@@ -34,14 +31,6 @@ public class MySQLInstaller extends MySQLTableInstaller {
 
     @Override
     protected boolean isExists(Client client, Model model) throws StorageException {
-        TableMetaInfo.addModel(model);
-        switch (model.getScopeId()) {
-            case SERVICE_INVENTORY:
-            case SERVICE_INSTANCE_INVENTORY:
-            case NETWORK_ADDRESS:
-            case ENDPOINT_INVENTORY:
-                return false;
-        }
-        return true;
+        return MixInstaller.isExists(client, model);
     }
 }

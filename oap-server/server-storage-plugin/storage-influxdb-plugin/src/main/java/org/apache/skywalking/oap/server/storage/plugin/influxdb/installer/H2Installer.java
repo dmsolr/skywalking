@@ -22,15 +22,12 @@ import org.apache.skywalking.oap.server.core.storage.StorageException;
 import org.apache.skywalking.oap.server.core.storage.model.Model;
 import org.apache.skywalking.oap.server.library.client.Client;
 import org.apache.skywalking.oap.server.library.module.ModuleManager;
-import org.apache.skywalking.oap.server.storage.plugin.jdbc.TableMetaInfo;
 import org.apache.skywalking.oap.server.storage.plugin.jdbc.h2.dao.H2TableInstaller;
 
-import static org.apache.skywalking.oap.server.core.source.DefaultScopeDefine.*;
-
 /**
- * Some tables, such as Metrics and SegmentRecord, they are stored in InfluxDB.
- * We don't need to create the tables explicitly in InfluxDB.
- *
+ * Some tables, such as Metrics and SegmentRecord, they are stored in InfluxDB. We don't need to create the tables
+ * explicitly in InfluxDB.
+ * <p>
  * In different with InfluxDB, we must execute DDL for MySQL.
  */
 public class H2Installer extends H2TableInstaller {
@@ -41,15 +38,7 @@ public class H2Installer extends H2TableInstaller {
 
     @Override
     protected boolean isExists(Client client, Model model) throws StorageException {
-        TableMetaInfo.addModel(model);
-        switch (model.getScopeId()) {
-            case SERVICE_INVENTORY:
-            case SERVICE_INSTANCE_INVENTORY:
-            case NETWORK_ADDRESS:
-            case ENDPOINT_INVENTORY:
-                return false;
-        }
-        return true;
+        return MixInstaller.isExists(client, model);
     }
 
 }
