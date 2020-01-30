@@ -109,7 +109,7 @@ storage:
 #      dataSource.useServerPrepStmts: ${SW_DATA_SOURCE_USE_SERVER_PREP_STMTS:true}
 #    metadataQueryMaxSize: ${SW_STORAGE_MYSQL_QUERY_MAX_SIZE:5000}
   influx:
-    metabaseDrive: ${SW_STORAGE_METABASE_DRIVER:org.h2.jdbcx.JdbcDataSource}
+    metabaseDriver: ${SW_STORAGE_METABASE_DRIVER:org.h2.jdbcx.JdbcDataSource}
     metabaseUrl: ${SW_STORAGE_METABASE_URL:jdbc:h2:mem:skywalking-oap-db}
     metabaseUser: ${SW_STORAGE_METABASE_USER:sa}
     metabasePassword: ${SW_STORAGE_METABASE_PASSWORD:}
