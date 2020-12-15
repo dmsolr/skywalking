@@ -46,11 +46,7 @@ public class H2RecordDAO extends H2SQLExecutor implements IRecordDAO {
                        final int numOfSearchableValuesPerTag) {
         this.h2Client = h2Client;
         try {
-            if (SegmentRecord.class
-                .equals(
-                    storageBuilder.getClass().getMethod("map2Data", Map.class).getReturnType()
-                )
-            ) {
+            if (SegmentRecord.class.equals(storageBuilder.getClass().getMethod("map2Data", Map.class).getReturnType())) {
                 this.maxSizeOfArrayColumn = maxSizeOfArrayColumn;
                 final ConfigService configService = manager.find(CoreModule.NAME)
                                                            .provider()
