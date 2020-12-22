@@ -61,7 +61,7 @@ public enum InstrumentDebuggingClass {
                 try {
                     dynamicType.saveIn(debuggingClassesRootPath);
                 } catch (IOException e) {
-                    LOGGER.error(e, "Can't save class {} to file." + dynamicType.getTypeDescription().getActualName());
+                    LOGGER.error(e, "Can't save class {} to file.", dynamicType.getTypeDescription().getActualName());
                 }
             } catch (Throwable t) {
                 LOGGER.error(t, "Save debugging classes fail.");

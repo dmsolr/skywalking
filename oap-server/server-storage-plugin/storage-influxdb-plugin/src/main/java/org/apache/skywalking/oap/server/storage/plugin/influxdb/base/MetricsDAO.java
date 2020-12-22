@@ -36,6 +36,7 @@ import org.apache.skywalking.oap.server.core.storage.type.StorageDataComplexObje
 import org.apache.skywalking.oap.server.library.client.request.InsertRequest;
 import org.apache.skywalking.oap.server.library.client.request.UpdateRequest;
 import org.apache.skywalking.oap.server.storage.plugin.influxdb.InfluxClient;
+import org.apache.skywalking.oap.server.storage.plugin.influxdb.InfluxConstants;
 import org.apache.skywalking.oap.server.storage.plugin.influxdb.TableMetaInfo;
 import org.influxdb.dto.QueryResult;
 import org.influxdb.querybuilder.SelectQueryImpl;
@@ -61,7 +62,7 @@ public class MetricsDAO implements IMetricsDAO {
         WhereQueryImpl<SelectQueryImpl> query = select()
             .raw(ALL_FIELDS)
             .from(client.getDatabase(), model.getName())
-            .where(contains("id", Joiner.on("|").join(ids)));
+            .where(contains(InfluxConstants.TagName.ID_COLUMN, Joiner.on("|").join(ids)));
         QueryResult.Series series = client.queryForSingleSeries(query);
         if (log.isDebugEnabled()) {
             log.debug("SQL: {} result: {}", query.getCommand(), series);

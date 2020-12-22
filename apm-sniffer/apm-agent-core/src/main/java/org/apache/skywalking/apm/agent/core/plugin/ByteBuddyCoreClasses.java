@@ -25,12 +25,12 @@ public class ByteBuddyCoreClasses {
     private static final String SHADE_PACKAGE = "org.apache.skywalking.apm.dependencies.";
 
     public static final String[] CLASSES = {
-        SHADE_PACKAGE + "net.bytebuddy.implementation.bind.annotation.RuntimeType",
-        SHADE_PACKAGE + "net.bytebuddy.implementation.bind.annotation.This",
-        SHADE_PACKAGE + "net.bytebuddy.implementation.bind.annotation.AllArguments",
-        SHADE_PACKAGE + "net.bytebuddy.implementation.bind.annotation.AllArguments$Assignment",
-        SHADE_PACKAGE + "net.bytebuddy.implementation.bind.annotation.SuperCall",
-        SHADE_PACKAGE + "net.bytebuddy.implementation.bind.annotation.Origin",
-        SHADE_PACKAGE + "net.bytebuddy.implementation.bind.annotation.Morph",
-        };
+            SHADE_PACKAGE + "net.bytebuddy.implementation.bind.annotation.RuntimeType",
+            SHADE_PACKAGE + "net.bytebuddy.implementation.bind.annotation.This",
+            SHADE_PACKAGE + "net.bytebuddy.implementation.bind.annotation.AllArguments",
+            SHADE_PACKAGE + "net.bytebuddy.implementation.bind.annotation.AllArguments$Assignment",
+            SHADE_PACKAGE + "net.bytebuddy.implementation.bind.annotation.SuperCall",
+            SHADE_PACKAGE + "net.bytebuddy.implementation.bind.annotation.Origin",
+            SHADE_PACKAGE + "net.bytebuddy.implementation.bind.annotation.Morph",
+    };
 }
