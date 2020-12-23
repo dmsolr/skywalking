@@ -49,10 +49,8 @@ public class TableMetaInfo {
         final List<ModelColumn> columns = model.getColumns();
         final Map<String, String> storageAndTagMap = Maps.newHashMap();
         final Map<String, String> storageAndColumnMap = Maps.newHashMap();
-        columns.forEach(column -> {
-            ColumnName columnName = column.getColumnName();
-            storageAndColumnMap.put(columnName.getStorageName(), columnName.getName());
-        });
+
+
 
         if (model.getName().endsWith("_traffic")) {
             // instance_traffic name, service_id

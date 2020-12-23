@@ -8,13 +8,22 @@ import java.util.Map;
 @Data
 public class ShardingRule {
 
+    // tables:
     private Map<String, ShardingTable> tables;
 
+    // bindingTables
+    // ----
+
+    // defaultDatabaseStrategy
     private DatabaseStrategy defaultDatabaseStrategy;
 
+    // defaultTableStrategy
     private TableStrategy defaultTableStrategy;
 
+    // shardingAlgorithms
     private Map<String, ShardingAlgorithm> shardingAlgorithms;
+
+    // keyGenerators
 
     @Data
     public static class ShardingTable {
@@ -26,6 +35,17 @@ public class ShardingRule {
     @Data
     public static class DatabaseStrategy {
 //        private StandardDatabaseStrategy standard;
+        // standard:
+        // none:
+
+        public static class StandardDatabaseStrategy {
+//            shardingColumn: user_id
+//            shardingAlgorithmName: database_inline
+        }
+
+        public static class NoneDatabaseStrategy {
+
+        }
     }
 
     @Data
@@ -38,16 +58,16 @@ public class ShardingRule {
         private String type;
         private Map<String, Object> props;
     }
+
+    @Data
+    class ShardingTableStrategy {
+
+    }
+
+    @Data
+    class ShardingKeyGeneratorStrategy {
+        private List<String> column;
+        private String keyGeneratorName;
+    }
+
 }
-
-@Data
-class ShardingTableStrategy {
-
-}
-
-@Data
-class ShardingKeyGeneratorStrategy {
-    private List<String> column;
-    private String keyGeneratorName;
-}
-
